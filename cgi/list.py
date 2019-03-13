@@ -54,6 +54,8 @@ def write_html():
                 {"key":1024, "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[1,"resignation"]}]
 
     write_table("Active",   active)
+    write_create_game_form()
+    print("<hr>\n\n")
     write_table("Idle",     idle,     idle=True)
     write_table("Finished", finished, finished=True)
 
@@ -105,6 +107,20 @@ def write_table(desc, games, idle=False, finished=False):
 
     print("""      </table>
 
+
+""", end="")
+
+
+
+def write_create_game_form():
+    print("""<p><b>Create a New Game</b>
+
+<form action="create_game.py" method="post">
+  Player 1: <input type="text" size=10 name="player1">
+  Player 2: <input type="text" size=10 name="player2">
+  Size:     <input type="text" size=1  name="size">
+  <input type=submit value="Create">
+</form>
 
 """, end="")
 

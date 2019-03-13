@@ -26,12 +26,23 @@ def write_html():
     form = cgi.FieldStorage()
 
 
-    gameNum = 1234
+    if "game" not in form or "user" not in form:
+        report_error("Invalid parameters.")
+        return
+
+
+    game = int(form["game"].value)
     players = ["Russ","Eric"]
     size = 3
     state = "Active"
     nextToPlay = 0
-    curUser = 0
+
+    user = form["user"].value
+    if user not in players:
+        report_error("Sorry, the player '%s' is not part of this game." % user)
+        return
+
+    curUser = players.index(user)
 
     board = [["","",""],
              ["","",""],
@@ -53,37 +64,40 @@ def write_html():
 <p><b>Next to Play:</b> %s
 <br><b>You Are:</b> %s
 
-""" % (gameNum, players[0],players[1], size,size, state, players[nextToPlay], players[curUser]), end="")
+""" % (game, players[0],players[1], size,size, state, players[nextToPlay], players[curUser]), end="")
 
 
-    print("""<p>                                                                             
-<form action="play.py" method="get">                                            
-                                                                                
-<table border=2>                                                                
+    print("""<p>
+<form action="play.py" method="get">
+
+<table border=2>
 """, end="")
 
     for x in range(size):
         print("  <tr height=50 valign=center>")
 
         for y in range(size):
-            if board[x][y] == "":
-                content = """<input type=submit value="" name="%d,%d">""" % (x,y)
-            else:
+            if board[x][y] != "":
                 content = board[x][y]
+            elif curUser != nextToPlay:
+                content = ""
+            else:
+                content = """<input type=submit value="" name="%d,%d">""" % (x,y)
 
             print("    <td width=50 align=center>"+content+"</td>")
 
         print("  </tr>")
 
-    print("""</table>                                                                        
-                                                                                
-<input type=submit value="Resign" name="resign">                                
-                                                                                
-</form>
+    print("""</table>
 
 """, end="")
 
-    print("""<p>Last activity: %s
+    if curUser == nextToPlay:
+        print("""<input type=submit value="Resign" name="resign">\n\n""")
+
+    print("""</form>
+
+<p>Last activity: %s
 
 """ % last, end="")
 
@@ -99,6 +113,23 @@ def write_html():
 </html>
 
 """, end="")
+
+
+
+def report_error(msg):
+    print("""<html>
+<head><title>346 - Russ Lewis - Tic-Tac-Toe</title></head>
+
+<body>
+
+<p>ERROR: %s
+
+<p><a href="list.py">Return to game list</a>
+
+</body>
+</html>
+
+""" % msg, end="")
 
 
 
