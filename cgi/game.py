@@ -84,7 +84,7 @@ def write_html():
             elif curUser != nextToPlay:
                 content = ""
             else:
-                content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (x,y)
+                content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (y,x)
 
             print("    <td width=50 align=center>"+content+"</td>")
 

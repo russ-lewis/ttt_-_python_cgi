@@ -33,24 +33,17 @@ def process_form():
     form = cgi.FieldStorage()
 
 
-#    if "user" not in form:
-#        raise FormError("Invalid parameters.")
-#
-#    player1 = form["player1"].value
-#    player2 = form["player2"].value
-#    for c in player1+player2:
-#        if c not in "_-" and not c.isdigit() and not c.isalpha():
-#            raise FormError("Invalid parameters: The player names can only contains upper and lowercase characters, digits, underscores, and hypens")
-#            return
-#
-#    try:
-#        size = int(form["size"].value)
-#    except:
-#        raise FormError("Invalid parameters: 'size' is not an integer.")
-#        return
-    user = "Eric"
-    game = 1025
-    pos  = "0,1"
+    if "user" not in form or "game" not in form or "pos" not in form:
+        raise FormError("Invalid parameters.")
+
+    user = form["user"].value
+
+    game = int(form["game"].value)
+
+    pos = form["pos"].value.split(",")
+    assert len(pos) == 2
+    x = int(pos[0])
+    y = int(pos[1])
 
 
     # connect to the database
@@ -77,6 +70,39 @@ def process_form():
         raise FormError("Invalid player ID - player is not part of this game")
 
 
+    (board,nextPlayer,letter) = build_board(conn, game,size)
+
+    if user != players[nextPlayer]:
+        raise FormError("Internal error, incorrect player is attempting to move.")
+
+
+    assert x >= 0 and x < size
+    assert y >= 0 and y < size
+
+    assert board[x][y] == ""
+
+
+    # we've done all of our sanity checks.  We now know enough to say that
+    # it's safe to add a new move.
+    cursor = conn.cursor()
+    cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""" % (game,x,y,letter))
+
+    if cursor.rowcount != 1:
+        raise FormError("Could not make move, reason unknown.")
+
+    cursor.close()
+
+    # we've made changes, make sure to commit them!
+    conn.commit()
+    conn.close()
+
+
+    # return the parms to the caller, so that they can build a good redirect
+    return (user,game)
+
+
+
+def build_board(conn, game,size):
     # we'll build the empty board, and then fill in with the move list that
     # we get from the DB.
     board = []
@@ -110,44 +136,12 @@ def process_form():
     assert counts["X"] <= counts["O"]+1
 
     if counts["X"] == counts["O"]:
-        next = 0
+        nextPlayer = 0
     else:
-        next = 1
-    letter = "XO"[next]
+        nextPlayer = 1
+    letter = "XO"[nextPlayer]
 
-
-    if user != players[next]:
-        raise FormError("Internal error, incorrect player is attempting to move.")
-
-
-    pos = pos.split(",")
-    assert len(pos) == 2
-    x = int(pos[0])
-    y = int(pos[1])
-
-    assert x >= 0 and x < size
-    assert y >= 0 and y < size
-
-    assert board[x][y] == ""
-
-
-    # we've done all of our sanity checks.  We now know enough to say that
-    # it's safe to add a new move.
-    cursor = conn.cursor()
-    cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""" % (game,x,y,letter))
-
-    if cursor.rowcount != 1:
-        raise FormError("Could not make move, reason unknown.")
-
-    cursor.close()
-
-    # we've made changes, make sure to commit them!
-    conn.commit()
-    conn.close()
-
-
-    # return the parms to the caller, so that they can build a good redirect
-    return (user,game)
+    return (board,nextPlayer,letter)
 
 
 
@@ -185,6 +179,8 @@ except FormError as e:
 """ % e.msg, end="")
 
 except:
+    print("""Content-Type: text/html;charset=utf-8\n\n""")
+
     raise    # throw the error again, now that we've printed the lead text - and this will cause cgitb to report the error
 
 
