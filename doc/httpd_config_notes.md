@@ -41,6 +41,9 @@ Useful SQL, MySQL Statements:
 
     ALTER TABLE tablename MODIFY COLUMN fieldName <new type and constraints>;
 
+  SHOW CREATE TABLE tablename;
+    # shows the CREATE TABLE command needed to duplicate the design
+
 
 
 Debug Notes:

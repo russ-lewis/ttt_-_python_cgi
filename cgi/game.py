@@ -70,9 +70,10 @@ def write_html():
     print("""<p>
 <form action="move.py" method="get">
   <input type=hidden name="user" value="%s">
+  <input type=hidden name="game" value="%s">
 
 <table border=2>
-""" % players[nextToPlay], end="")
+""" % (players[nextToPlay],game), end="")
 
     for x in range(size):
         print("  <tr height=50 valign=center>")
