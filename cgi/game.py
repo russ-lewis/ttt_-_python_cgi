@@ -68,7 +68,7 @@ def write_html():
 
 
     print("""<p>
-<form action="play.py" method="get">
+<form action="move.py" method="get">
 
 <table border=2>
 """, end="")
@@ -82,7 +82,7 @@ def write_html():
             elif curUser != nextToPlay:
                 content = ""
             else:
-                content = """<input type=submit value="" name="%d,%d">""" % (x,y)
+                content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (x,y)
 
             print("    <td width=50 align=center>"+content+"</td>")
 

@@ -11,6 +11,9 @@ import cgi
 import cgitb
 cgitb.enable()
 
+import MySQLdb
+import private_no_share_dangerous_passwords as pnsdp
+
 
 
 # this function handles the processing of the actual text of the HTML file.
@@ -53,11 +56,56 @@ def write_html():
 
 """, end="")
 
-    active   = [{"key":1234, "player0_name":"Russ", "player1_name":"Eric", "size":3}]
-    idle     = [{"key":5678, "player0_name":"Russ", "player1_name":"Eric", "size":3, "last_activity":"A long time ago..."}]
-    finished = [{"key":42,   "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[1,"complete"]},
-                {"key":-1,   "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[0,"timeout"]},
-                {"key":1024, "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[1,"resignation"]}]
+
+    # connect to the database
+    conn = MySQLdb.connect(host   = pnsdp.SQL_HOST,
+                           user   = pnsdp.SQL_USER,
+                           passwd = pnsdp.SQL_PASSWD,
+                           db     = pnsdp.SQL_DB)
+
+
+    # search for all games that are not yet completed.  We have not yet
+    # implemented the "idle" games feature, so we'll only have the two
+    # classifications
+    cursor = conn.cursor()
+    cursor.execute("SELECT id,player1,player2,size FROM games WHERE state IS NULL;")
+
+    active = []
+    for row in cursor.fetchall():
+        active.append({"key":row[0], "player0_name":row[1], "player1_name":row[2], "size":int(row[3])})
+
+    cursor.close();
+
+
+    # now, search for the games that *HAVE* been completed.
+    cursor = conn.cursor()
+    cursor.execute("SELECT id,player1,player2,size,state FROM games WHERE state IS NOT NULL;")
+
+    finished = []
+    for row in cursor.fetchall():
+        key   =     row[0]
+        p0    =     row[1]
+        p1    =     row[2]
+        size  = int(row[3])
+        state =     row[4].split(':')
+
+        assert len(state) == 2
+
+        winner = state[0]
+        reason = state[1]
+
+        players = [p0,p1]
+        assert winner in players
+        winner = players.index(winner)
+
+        finished.append({"key":key, "player0_name":p0, "player1_name":p1, "size":size, "winner":[winner,reason]})
+
+    cursor.close();
+    conn.close();
+
+
+    idle = ""
+    # idle     = [{"key":5678, "player0_name":"Russ", "player1_name":"Eric", "size":3, "last_activity":"A long time ago..."}]
 
     write_table("Active",   active, new_game=new_game)
     write_create_game_form()
@@ -141,6 +189,9 @@ def write_create_game_form():
 
 
 # this is what actually runs, each time that we are called...
+
+#print("Content-Type: text/plain;")
+#print()
 
 print("Content-Type: text/html;charset=utf-8")
 print()

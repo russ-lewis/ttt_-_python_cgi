@@ -12,6 +12,10 @@ import cgitb
 cgitb.enable()
 
 
+import MySQLdb
+import private_no_share_dangerous_passwords as pnsdp
+
+
 
 # this function handles the processing of the actual text of the HTML file.
 # It writes everything from the HTML header, to the content in the body, to
@@ -46,24 +50,46 @@ def process_form():
         raise FormError("Invalid parameters: 'size' is not an integer.")
         return
 
+    if size < 2 or size > 9:
+        raise FormError("The 'size' must be in the range 2-9, inclusive.")
 
-    raise FormError("I see that you are trying to create a new game.  This is not implemented yet.  player1='%s' player2='%s' size=%d" % (player1,player2,size))
+
+    # connect to the database
+    conn = MySQLdb.connect(host   = pnsdp.SQL_HOST,
+                           user   = pnsdp.SQL_USER,
+                           passwd = pnsdp.SQL_PASSWD,
+                           db     = pnsdp.SQL_DB)
+    cursor = conn.cursor()
+
+    # insert the new row
+    cursor.execute("""INSERT INTO games(player1,player2,size) VALUES("%s","%s",%d);""" % (player1,player2,size))
+
+    gameID = cursor.lastrowid
+
+
+    # MySQLdb has been building a transaction as we run.  Commit them now, and
+    # also clean up the other resources we've allocated.
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return gameID
 
 
 
 # this is what actually runs, each time that we are called...
 
 try:
-#    print("Content-type: text/html")
-#    print()
+    #print("Content-type: text/html")
+    #print()
 
     # this will not print out *ANYTHING* !!!
-    process_form()
+    gameID = process_form()
 
     # https://en.wikipedia.org/wiki/Post/Redirect/Get
     # https://stackoverflow.com/questions/6122957/webpage-redirect-to-the-main-page-with-cgi-python
     print("Status: 303 See other")
-    print("""Location: http://54.184.40.90/cgi-bin/list.py?new_game=1234""")
+    print("""Location: http://%s/cgi-bin/list.py?new_game=%s""" % (pnsdp.WEB_HOST,gameID))
     print()
 
 except FormError as e:

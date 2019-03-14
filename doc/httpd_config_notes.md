@@ -1,6 +1,15 @@
 * Using httpd (Apache)
   * /var/www/cgi-bin/
 
+* Install mysql on your EC2 instance
+    sudo yum install mariadb              # mysql command line
+    sudo yum install mariadb-devel        # mysql_config command, needed by pip
+    sudo yum install gcc                  # also needed for pip install
+    sudo pip3 install mysqlclientk
+
+    ??? sudo yum install python3-devel
+    ??? sudo yum install MySQL-python
+
 * Worthwhile tools to install:
   * python3
   * git
@@ -9,6 +18,28 @@
   
 Links:
   https://docs.python.org/3.4/howto/webservers.html
+  https://aws.amazon.com/getting-started/tutorials/create-mysql-db/
+      - public DB not required if you configure with command line
+      - but have to add rule to security group, to allow DB connections from the SG
+  https://pythonspot.com/mysql-with-python/
+
+
+
+Useful SQL, MySQL Statements:
+  USE <dbName>
+
+  SELECT ...
+
+  SHOW TABLES;
+
+  CREATE TABLE name (fieldName TYPE [NOT NULL] [AUTO_INCREMENT], ... , PRIMARY KEY(fieldName), FOREIGN KEY(localFieldname) REFERENCES remoteTable(remoteField));
+
+  SHOW COLUMNS FROM table;
+
+  ALTER TABLE ...
+    https://dev.mysql.com/doc/refman/8.0/en/alter-table.html
+
+    ALTER TABLE tablename MODIFY COLUMN fieldName <new type and constraints>;
 
 
 
