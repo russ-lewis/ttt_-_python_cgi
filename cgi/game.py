@@ -11,6 +11,11 @@ import cgi
 import cgitb
 cgitb.enable()
 
+import MySQLdb
+import private_no_share_dangerous_passwords as pnsdp
+
+from common import get_game_info,build_board
+
 
 
 # this function handles the processing of the actual text of the HTML file.
@@ -26,16 +31,21 @@ def write_html():
     form = cgi.FieldStorage()
 
 
+    # connect to the database
+    conn = MySQLdb.connect(host   = pnsdp.SQL_HOST,
+                           user   = pnsdp.SQL_USER,
+                           passwd = pnsdp.SQL_PASSWD,
+                           db     = pnsdp.SQL_DB)
+
+
     if "game" not in form or "user" not in form:
         report_error("Invalid parameters.")
         return
 
 
     game = int(form["game"].value)
-    players = ["Russ","Eric"]
-    size = 3
-    state = "Active"
-    nextToPlay = 0
+
+    (players,size) = get_game_info(conn, game)
 
     user = form["user"].value
     if user not in players:
@@ -44,10 +54,10 @@ def write_html():
 
     curUser = players.index(user)
 
-    board = [["","",""],
-             ["","",""],
-             ["","",""]]
+    (board, nextToPlay,letter) = build_board(conn, game,size)
 
+    # TODO: read these from the DB, later
+    state = "Active"
     last = "1 Jan 1970"
 
     print("""<html>
@@ -75,16 +85,16 @@ def write_html():
 <table border=2>
 """ % (players[nextToPlay],game), end="")
 
-    for x in range(size):
+    for y in range(size):
         print("  <tr height=50 valign=center>")
 
-        for y in range(size):
+        for x in range(size):
             if board[x][y] != "":
                 content = board[x][y]
             elif curUser != nextToPlay:
                 content = ""
             else:
-                content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (y,x)
+                content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (x,y)
 
             print("    <td width=50 align=center>"+content+"</td>")
 
@@ -116,6 +126,8 @@ def write_html():
 
 """, end="")
 
+    conn.close()
+
 
 
 def report_error(msg):
@@ -136,9 +148,32 @@ def report_error(msg):
 
 
 # this is what actually runs, each time that we are called...
+try:
+    print("Content-type: text/html")
+    print()
 
-print("Content-Type: text/html;charset=utf-8")
-print()
+    # this will print out lots and lots of stuff - the entire response,
+    # typically (except for the header).  However, sometimes, we will
+    # hit an exception, which will throw us into one of the handlers
+    # below.
+    write_html()
 
-write_html()
+except FormError as e:
+    print("""<html>
+
+<head><title>346 - Russ Lewis - Tic-Tac-Toe</title></head>
+
+<body>
+
+<p>ERROR: %s
+
+<p><a href="list.py">Return to game list</a>
+
+</body>
+</html>
+
+""" % e.msg, end="")
+
+# except(other) ...
+#   other errors will be caught by the cgitb module, and pretty-printed
 

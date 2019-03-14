@@ -14,6 +14,8 @@ cgitb.enable()
 import MySQLdb
 import private_no_share_dangerous_passwords as pnsdp
 
+from common import get_game_info,build_board
+
 
 
 # this function handles the processing of the actual text of the HTML file.
@@ -33,19 +35,6 @@ def process_form():
     form = cgi.FieldStorage()
 
 
-    if "user" not in form or "game" not in form or "pos" not in form:
-        raise FormError("Invalid parameters.")
-
-    user = form["user"].value
-
-    game = int(form["game"].value)
-
-    pos = form["pos"].value.split(",")
-    assert len(pos) == 2
-    x = int(pos[0])
-    y = int(pos[1])
-
-
     # connect to the database
     conn = MySQLdb.connect(host   = pnsdp.SQL_HOST,
                            user   = pnsdp.SQL_USER,
@@ -53,21 +42,22 @@ def process_form():
                            db     = pnsdp.SQL_DB)
 
 
-    # get the basic game properties
-    cursor = conn.cursor()
-    cursor.execute("SELECT player1,player2,size FROM games WHERE id = %d;" % game)
-    if cursor.rowcount != 1:
-        raise FormError("Invalid game ID")
+    if "user" not in form or "game" not in form or "pos" not in form:
+        raise FormError("Invalid parameters.")
 
-    row = cursor.fetchall()[0]
-    players = [row[0],row[1]]
-    size    =  row[2]
-
-    cursor.close()
+    game = int(form["game"].value)
 
 
+    (players,size) = get_game_info(conn, game)
+
+    user = form["user"].value
     if user not in players:
         raise FormError("Invalid player ID - player is not part of this game")
+
+    pos = form["pos"].value.split(",")
+    assert len(pos) == 2
+    x = int(pos[0])
+    y = int(pos[1])
 
 
     (board,nextPlayer,letter) = build_board(conn, game,size)
@@ -99,49 +89,6 @@ def process_form():
 
     # return the parms to the caller, so that they can build a good redirect
     return (user,game)
-
-
-
-def build_board(conn, game,size):
-    # we'll build the empty board, and then fill in with the move list that
-    # we get from the DB.
-    board = []
-    for i in range(size):
-        board.append([""]*size)
-
-
-    # search for all moves that have happenend during this game.
-    cursor = conn.cursor()
-    cursor.execute("SELECT x,y,letter FROM moves WHERE gameID = %d;" % game)
-
-    counts = {"X":0, "O":0}
-    for move in cursor.fetchall():
-        (x,y,letter) = move
-
-        x = int(x)
-        y = int(y)
-        assert x >= 0 and x < size
-        assert y >= 0 and y < size
-
-        assert letter in "XO"
-
-        assert board[x][y] == ""
-        board[x][y] = letter
-
-        counts[letter] += 1
-
-    cursor.close()
-
-    assert counts["X"] >= counts["O"]
-    assert counts["X"] <= counts["O"]+1
-
-    if counts["X"] == counts["O"]:
-        nextPlayer = 0
-    else:
-        nextPlayer = 1
-    letter = "XO"[nextPlayer]
-
-    return (board,nextPlayer,letter)
 
 
 
