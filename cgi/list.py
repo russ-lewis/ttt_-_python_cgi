@@ -39,6 +39,12 @@ def write_html():
 
     last = "1 Jan 1970"
 
+    if "new_game" in form:
+        new_game = int(form["new_game"].value)
+    else:
+        new_game = None
+
+
     print("""<html>
 <head><title>346 - Russ Lewis - Tic-Tac-Toe</title></head>
 
@@ -53,7 +59,7 @@ def write_html():
                 {"key":-1,   "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[0,"timeout"]},
                 {"key":1024, "player0_name":"Russ", "player1_name":"Eric", "size":3, "winner":[1,"resignation"]}]
 
-    write_table("Active",   active)
+    write_table("Active",   active, new_game=new_game)
     write_create_game_form()
     print("<hr>\n\n")
     write_table("Idle",     idle,     idle=True)
@@ -66,7 +72,7 @@ def write_html():
 
 
 
-def write_table(desc, games, idle=False, finished=False):
+def write_table(desc, games, new_game=None, idle=False, finished=False):
     if idle:
         idleStr = "<td><b>Idle Since</b></td> "
     else:
@@ -88,12 +94,20 @@ def write_table(desc, games, idle=False, finished=False):
         players = [g["player0_name"], g["player1_name"]]
         size    =  g["size"]
 
+        if new_game is not None and key == new_game:
+            mark1 = "<font color=red><b>"
+            mark2 = "</b></font>"
+        else:
+            mark1 = ""
+            mark2 = ""
+
+
         if idle:
             idleStr = "          <td>%s</td>\n" % g["last_activity"]
 
         if not finished:
-            finishedStr = """          <td> <a href="game.py?user=%s&game=%d">%s</a> <a href="game.py?user=%s&game=%d">%s</a> </td>
-""" % (players[0],key,players[0], players[1],key,players[1])
+            finishedStr = """          <td> %s<a href="game.py?user=%s&game=%d">%s</a> <a href="game.py?user=%s&game=%d">%s</a>%s </td>
+""" % (mark1, players[0],key,players[0], players[1],key,players[1], mark2)
         else:
             winner = g["winner"]
             finishedStr = "          <td>%s</td> <td>(%s)</td>\n" % (players[winner[0]],winner[1])
@@ -101,9 +115,9 @@ def write_table(desc, games, idle=False, finished=False):
 
         print("""
         <tr>
-          <td>%d</td> <td>%s, %s</td> <td>%dx%d</td>
+          <td>%s%d%s</td> <td>%s%s, %s%s</td> <td>%s%dx%d%s</td>
 %s%s        </tr>
-""" % (key, players[0],players[1], size,size, idleStr,finishedStr), end="")
+""" % (mark1,key,mark2, mark1,players[0],players[1],mark2, mark1,size,size,mark2, idleStr,finishedStr), end="")
 
     print("""      </table>
 
