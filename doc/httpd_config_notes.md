@@ -1,21 +1,29 @@
 * Using httpd (Apache)
   * /var/www/cgi-bin/
 
+* Previously, on Project 1...
+    sudo yum install httpd
+
 * Install mysql on your EC2 instance
+    sudo yum install python3
     sudo yum install mariadb              # mysql command line
     sudo yum install mariadb-devel        # mysql_config command, needed by pip
     sudo yum install gcc                  # also needed for pip install
-    sudo pip3 install mysqlclientk
+    pip3 install mysqlclient              # makes the MySQLdb package work inside your python3 program
+    sudo yum install python3-devel
 
-    ??? sudo yum install python3-devel
-    ??? sudo yum install MySQL-python
+* Other useful tools
+    sudo yum install git
 
-* Worthwhile tools to install:
-  * python3
-  * git
-  
-  
-  
+* Setting up error logging
+    sudo bash
+    cd /var/log/httpd
+    chmod a+x .
+    mkdir cgi_err
+    chown apache:apache cgi_err
+
+
+
 Links:
   https://docs.python.org/3.4/howto/webservers.html
   https://aws.amazon.com/getting-started/tutorials/create-mysql-db/
