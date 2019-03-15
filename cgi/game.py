@@ -14,7 +14,7 @@ cgitb.enable(display=0, logdir="/var/log/httpd/cgi_err/")
 import MySQLdb
 import private_no_share_dangerous_passwords as pnsdp
 
-from common import get_game_info,build_board
+from common import get_game_info,build_board,FormError
 
 
 

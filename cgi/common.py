@@ -3,6 +3,12 @@
 
 
 
+class FormError(BaseException):
+    def __init__(this, msg):
+        this.msg = msg
+
+
+
 def get_game_info(conn, game):
     # get the basic game properties
     cursor = conn.cursor()

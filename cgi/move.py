@@ -14,7 +14,7 @@ cgitb.enable(display=0, logdir="/var/log/httpd/cgi_err/")
 import MySQLdb
 import private_no_share_dangerous_passwords as pnsdp
 
-from common import get_game_info,build_board
+from common import get_game_info,build_board,FormError
 
 
 
@@ -24,10 +24,6 @@ from common import get_game_info,build_board
 #
 # Later, I ought to make this smarter, to handle cookies and such.  Or, just
 # switch over to some framework which makes it all easier for me!
-
-class FormError(BaseException):
-    def __init__(this, msg):
-        this.msg = msg
 
 def process_form():
     # see https://docs.python.org/3.4/library/cgi.html for the basic usage
