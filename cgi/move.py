@@ -104,7 +104,7 @@ try:
     # https://en.wikipedia.org/wiki/Post/Redirect/Get
     # https://stackoverflow.com/questions/6122957/webpage-redirect-to-the-main-page-with-cgi-python
     print("Status: 303 See other")
-    print("""Location: http://54.184.40.90/cgi-bin/game.py?user=%s&game=%s""" % (user,game))
+    print("""Location: http://%s/cgi-bin/game.py?user=%s&game=%s""" % (pnsdp.WEB_HOST, user,game))
     print()
 
 except FormError as e:
