@@ -87,16 +87,16 @@ def write_html():
         p0    =     row[1]
         p1    =     row[2]
         size  = int(row[3])
-        state =     row[4].split(':')
+        state =     row[4]
 
-        assert len(state) == 2
-
-        winner = state[0]
-        reason = state[1]
-
-        players = [p0,p1]
-        assert winner in players
-        winner = players.index(winner)
+        if state == "stalemate":
+            winner = "n/a"
+            reason = state
+        else:
+            state = state.split(':')
+            assert len(state) == 2
+            winner = state[0]
+            reason = state[1]
 
         finished.append({"key":key, "player0_name":p0, "player1_name":p1, "size":size, "winner":[winner,reason]})
 
@@ -158,7 +158,7 @@ def write_table(desc, games, new_game=None, idle=False, finished=False):
 """ % (mark1, players[0],key,players[0], players[1],key,players[1], mark2)
         else:
             winner = g["winner"]
-            finishedStr = "          <td>%s</td> <td>(%s)</td>\n" % (players[winner[0]],winner[1])
+            finishedStr = "          <td>%s</td> <td>(%s)</td>\n" % (winner[0],winner[1])
 
 
         print("""

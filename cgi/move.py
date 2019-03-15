@@ -86,7 +86,7 @@ def process_form():
         assert y >= 0 and y < size
 
         assert board[x][y] == ""
-
+        board[x][y] = "XO"[nextPlayer]
 
         # we've done all of our sanity checks.  We now know enough to say that
         # it's safe to add a new move.
@@ -98,6 +98,15 @@ def process_form():
 
         cursor.close()
 
+        result = analyze_board(board)
+        if result != "":
+            if result == "win":
+                result = players[nextPlayer]+":win"
+
+            cursor = conn.cursor()
+            cursor.execute("""UPDATE games SET state="%s" WHERE id=%d;""" % (result,game))
+            cursor.close()
+
     # we've made changes, make sure to commit them!
     conn.commit()
     conn.close()
@@ -105,6 +114,62 @@ def process_form():
 
     # return the parms to the caller, so that they can build a good redirect
     return (user,game)
+
+
+
+def analyze_board(board):
+    size = len(board)
+
+    for x in range(size):
+        # scan through the column 'x' to see if they are all the same.
+        if board[x][0] == "":
+            continue
+        all_same = True
+        for y in range(1,size):
+            if board[x][y] != board[x][0]:
+                all_same = False
+                break
+        if all_same:
+            return "win"
+
+    for y in range(size):
+        # scan through the row 'y' to see if they are all the same.
+        if board[0][y] == "":
+            continue
+        all_same = True
+        for x in range(1,size):
+            if board[x][y] != board[0][y]:
+                all_same = False
+                break
+        if all_same:
+            return "win"
+
+    # check the NW/SE diagonal
+    if board[0][0] != "":
+        all_same = True
+        for i in range(1,size):
+            if board[i][i] != board[0][0]:
+                all_same = False
+                break
+        if all_same:
+            return "win"
+
+    # check the NE/SW diagonal
+    if board[size-1][0] != "":
+        all_same = True
+        for i in range(1,size):
+            if board[size-1-i][i] != board[size-1][0]:
+                all_same = False
+                break
+        if all_same:
+            return "win"
+
+    # check for stalemate
+    for x in range(size):
+        for y in range(size):
+            if board[x][y] == "":
+                return ""
+    return "stalemate"
 
 
 
