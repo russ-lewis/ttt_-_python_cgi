@@ -9,7 +9,7 @@ import cgi
 # say that it's a very bad idea to leave enabled in production, as it can leak
 # information about your internal implementation.
 import cgitb
-cgitb.enable()
+cgitb.enable(display=0, logdir="/var/log/httpd/cgi_err/")
 
 import MySQLdb
 import private_no_share_dangerous_passwords as pnsdp
