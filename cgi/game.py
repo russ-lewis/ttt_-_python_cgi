@@ -45,7 +45,7 @@ def write_html():
 
     game = int(form["game"].value)
 
-    (players,size) = get_game_info(conn, game)
+    (players,size,state) = get_game_info(conn, game)
 
     user = form["user"].value
     if user not in players:
@@ -56,8 +56,7 @@ def write_html():
 
     (board, nextToPlay,letter) = build_board(conn, game,size)
 
-    # TODO: read these from the DB, later
-    state = "Active"
+    # TODO: read this from the DB, later
     last = "1 Jan 1970"
 
     print("""<html>
@@ -91,7 +90,7 @@ def write_html():
         for x in range(size):
             if board[x][y] != "":
                 content = board[x][y]
-            elif curUser != nextToPlay:
+            elif curUser != nextToPlay or state != "Active":
                 content = ""
             else:
                 content = """<button type=submit name="pos" value="%d,%d" style="height:100%%;width:100%%"></button>""" % (x,y)
@@ -104,14 +103,13 @@ def write_html():
 
 """, end="")
 
-    if curUser == nextToPlay:
+    if curUser == nextToPlay and state == "Active":
         print("""<input type=submit value="Resign" name="resign">\n\n""")
 
-    print("""</form>
+    print("</form>\n\n")
 
-<p>Last activity: %s
-
-""" % last, end="")
+    if state == "Active":
+        print("<p>Last activity: %s\n\n" % last, end="")
 
 
     print("""<p>HTML Variables:

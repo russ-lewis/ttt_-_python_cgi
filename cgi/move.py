@@ -50,7 +50,7 @@ def process_form():
     game = int(form["game"].value)
 
 
-    (players,size) = get_game_info(conn, game)
+    (players,size,state) = get_game_info(conn, game)
 
     user = form["user"].value
     if user not in players:
