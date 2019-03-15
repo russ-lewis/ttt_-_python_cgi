@@ -42,7 +42,9 @@ def process_form():
                            db     = pnsdp.SQL_DB)
 
 
-    if "user" not in form or "game" not in form or "pos" not in form:
+    if "user" not in form or "game" not in form:
+        raise FormError("Invalid parameters.")
+    if "pos" not in form and "resign" not in form:
         raise FormError("Invalid parameters.")
 
     game = int(form["game"].value)
@@ -54,10 +56,15 @@ def process_form():
     if user not in players:
         raise FormError("Invalid player ID - player is not part of this game")
 
-    pos = form["pos"].value.split(",")
-    assert len(pos) == 2
-    x = int(pos[0])
-    y = int(pos[1])
+
+    if "resign" in form:
+        resign = True
+    else:
+        resign = False
+        pos = form["pos"].value.split(",")
+        assert len(pos) == 2
+        x = int(pos[0])
+        y = int(pos[1])
 
 
     (board,nextPlayer,letter) = build_board(conn, game,size)
@@ -66,21 +73,30 @@ def process_form():
         raise FormError("Internal error, incorrect player is attempting to move.")
 
 
-    assert x >= 0 and x < size
-    assert y >= 0 and y < size
+    if resign:
+        # this user is choosing to resign.  Update the game state to reflect that.
+        other_player_name = players[1-nextPlayer]
 
-    assert board[x][y] == ""
+        cursor = conn.cursor()
+        cursor.execute("""UPDATE games SET state="%s:resignation" WHERE id=%d;""" % (other_player_name,game))
+        cursor.close()
+
+    else:
+        assert x >= 0 and x < size
+        assert y >= 0 and y < size
+
+        assert board[x][y] == ""
 
 
-    # we've done all of our sanity checks.  We now know enough to say that
-    # it's safe to add a new move.
-    cursor = conn.cursor()
-    cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""" % (game,x,y,letter))
+        # we've done all of our sanity checks.  We now know enough to say that
+        # it's safe to add a new move.
+        cursor = conn.cursor()
+        cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""" % (game,x,y,letter))
 
-    if cursor.rowcount != 1:
-        raise FormError("Could not make move, reason unknown.")
+        if cursor.rowcount != 1:
+            raise FormError("Could not make move, reason unknown.")
 
-    cursor.close()
+        cursor.close()
 
     # we've made changes, make sure to commit them!
     conn.commit()
