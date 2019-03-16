@@ -9,7 +9,7 @@
     sudo yum install mariadb              # mysql command line
     sudo yum install mariadb-devel        # mysql_config command, needed by pip
     sudo yum install gcc                  # also needed for pip install
-    pip3 install mysqlclient              # makes the MySQLdb package work inside your python3 program
+    sudo pip3 install mysqlclient         # makes the MySQLdb package work inside your python3 program
     sudo yum install python3-devel
 
 * Other useful tools
