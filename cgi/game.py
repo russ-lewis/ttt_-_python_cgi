@@ -112,7 +112,7 @@ def write_html():
         print("<p>Last activity: %s\n\n" % last, end="")
 
 
-    print("""<p>HTML Variables:
+    print("""<p>HTTP Variables:
   <pre>
 """, end="")
     for k in form:
