@@ -22,6 +22,9 @@
     mkdir cgi_err
     chown apache:apache cgi_err
 
+* Setting a local hostname
+    sudo hostnamectl set-hostname youGetToChoose    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/set-hostname.html
+
 
 
 Links:
