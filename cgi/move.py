@@ -74,7 +74,7 @@ def process_form():
         other_player_name = players[1-nextPlayer]
 
         cursor = conn.cursor()
-        cursor.execute("""UPDATE games SET state="%s:resignation" WHERE id=%d;""" % (other_player_name,game))
+        cursor.execute("""UPDATE games SET state="%s:resignation" WHERE id=%d;""", (other_player_name,game))
         cursor.close()
 
     else:
@@ -87,7 +87,7 @@ def process_form():
         # we've done all of our sanity checks.  We now know enough to say that
         # it's safe to add a new move.
         cursor = conn.cursor()
-        cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""" % (game,x,y,letter))
+        cursor.execute("""INSERT INTO moves(gameID,x,y,letter,time) VALUES(%d,%d,%d,"%s",NOW());""", (game,x,y,letter))
 
         if cursor.rowcount != 1:
             raise FormError("Could not make move, reason unknown.")
@@ -100,7 +100,7 @@ def process_form():
                 result = players[nextPlayer]+":win"
 
             cursor = conn.cursor()
-            cursor.execute("""UPDATE games SET state="%s" WHERE id=%d;""" % (result,game))
+            cursor.execute("""UPDATE games SET state="%s" WHERE id=%d;""", (result,game))
             cursor.close()
 
     # we've made changes, make sure to commit them!

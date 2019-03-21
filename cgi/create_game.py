@@ -60,7 +60,7 @@ def process_form():
     cursor = conn.cursor()
 
     # insert the new row
-    cursor.execute("""INSERT INTO games(player1,player2,size) VALUES("%s","%s",%d);""" % (player1,player2,size))
+    cursor.execute("""INSERT INTO games(player1,player2,size) VALUES("%s","%s",%d);""", (player1,player2,size))
 
     gameID = cursor.lastrowid
 
