@@ -12,7 +12,7 @@ class FormError(BaseException):
 def get_game_info(conn, game):
     # get the basic game properties
     cursor = conn.cursor()
-    cursor.execute("SELECT player1,player2,size,state FROM games WHERE id = %d;", (game,))
+    cursor.execute("SELECT player1,player2,size,state FROM games WHERE id = %s;", (game,))
     if cursor.rowcount != 1:
         raise FormError("Invalid game ID")
 
@@ -40,7 +40,7 @@ def build_board(conn, game,size):
 
     # search for all moves that have happenend during this game.
     cursor = conn.cursor()
-    cursor.execute("SELECT x,y,letter FROM moves WHERE gameID = %d;", (game,))
+    cursor.execute("SELECT x,y,letter FROM moves WHERE gameID = %s;", (game,))
 
     counts = {"X":0, "O":0}
     for move in cursor.fetchall():
