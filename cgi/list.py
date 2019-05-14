@@ -29,19 +29,6 @@ def write_html():
     form = cgi.FieldStorage()
 
 
-    gameNum = 1234
-    players = ["Russ","Eric"]
-    size = 3
-    state = "Active"
-    nextToPlay = 0
-    curUser = 0
-
-    board = [["","",""],
-             ["","",""],
-             ["","",""]]
-
-    last = "1 Jan 1970"
-
     if "new_game" in form:
         new_game = int(form["new_game"].value)
     else:
